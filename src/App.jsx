@@ -89,6 +89,18 @@ function Home() {
                     <div style={{ textAlign: 'center', width: '100%' }}>
                         <h1 className="hero-title">Discover Your Dream Home</h1>
                         <div className="hero-sub muted">Find rentals and properties from local agents</div>
+                        <div className="hero-search-wrap">
+                            <form className="big-search" onSubmit={submit}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search by location..." 
+                                    value={q} 
+                                    onChange={(e) => setQ(e.target.value)}
+                                    aria-label="Search properties"
+                                />
+                                <button type="submit" className="btn-search">🔍</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
