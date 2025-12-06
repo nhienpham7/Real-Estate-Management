@@ -25,7 +25,7 @@ export default function AuthPage() {
 
     return (
         <div style={{ 
-            minHeight: '100vh', 
+            minHeight: 'fit-content', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',

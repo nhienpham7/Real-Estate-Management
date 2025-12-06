@@ -66,11 +66,16 @@ export function AuthProvider({ children }) {
 
     const addCard = (card) => {
         if (!user) return { error: 'Not logged in' }
-        // billingAddressId must be one of user's addresses
-        const has = (user.addresses || []).find(a => a.id === card.billingAddressId)
-        if (!has) return { error: 'Billing address must be one of your saved addresses' }
         const c = { ...card, id: Date.now().toString() }
-        setUser(u => ({ ...u, cards: [...(u.cards || []), c] }))
+        setUser(u => {
+            // Check billing address exists in the current state
+            const has = (u.addresses || []).find(a => a.id === card.billingAddressId)
+            if (!has) {
+                console.error('Billing address not found')
+                return u // return unchanged if address doesn't exist
+            }
+            return { ...u, cards: [...(u.cards || []), c] }
+        })
         return c
     }
 

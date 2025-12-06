@@ -17,30 +17,84 @@ function AddressForm({ onSave, initial }) {
     )
 }
 
-function CardForm({ onSave, addresses, initial }) {
+function CardForm({ onSave, addresses, initial, onAddAddress }) {
     const [number, setNumber] = useState(initial?.number || '')
     const [name, setName] = useState(initial?.name || '')
     const [billingAddressId, setBillingAddressId] = useState(initial?.billingAddressId || (addresses[0]?.id || ''))
+    const [useExisting, setUseExisting] = useState(addresses.length > 0)
+    const [newLine, setNewLine] = useState('')
+    const [newCity, setNewCity] = useState('')
+    const [newZip, setNewZip] = useState('')
     const [error, setError] = useState(null)
+    
     const submit = () => {
         setError(null)
         if (!number || number.replace(/\s+/g, '').length < 12) return setError('Enter a valid card number (min 12 digits)')
         if (!name) return setError('Cardholder name required')
-        if (!billingAddressId) return setError('Select a billing address')
-        const result = onSave({ number, name, billingAddressId })
-        if (result && result.error) setError(result.error)
+        
+        if (useExisting) {
+            if (!billingAddressId) return setError('Select a billing address')
+            const result = onSave({ number, name, billingAddressId })
+            if (result && result.error) setError(result.error)
+        } else {
+            if (!newLine || !newCity) return setError('Line and city required for new address')
+            const newAddress = onAddAddress({ line: newLine, city: newCity, zip: newZip })
+            if (newAddress && newAddress.id) {
+                // Use setTimeout to ensure state is updated before adding card
+                setTimeout(() => {
+                    const result = onSave({ number, name, billingAddressId: newAddress.id })
+                    if (result && result.error) {
+                        setError(result.error)
+                    } else {
+                        setNumber('')
+                        setName('')
+                        setNewLine('')
+                        setNewCity('')
+                        setNewZip('')
+                    }
+                }, 0)
+            }
+        }
     }
+    
     return (
         <div>
             <div className="grid">
                 <input value={number} onChange={e => setNumber(e.target.value)} placeholder="Card number" />
                 <input value={name} onChange={e => setName(e.target.value)} placeholder="Cardholder name" />
-                <select value={billingAddressId} onChange={e => setBillingAddressId(e.target.value)}>
-                    {addresses.map(a => <option key={a.id} value={a.id}>{a.line} — {a.city}</option>)}
-                </select>
+                
+                {addresses.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                            <input type="radio" checked={useExisting} onChange={() => setUseExisting(true)} style={{ marginRight: 8 }} />
+                            Use existing address
+                        </label>
+                        {useExisting && (
+                            <select value={billingAddressId} onChange={e => setBillingAddressId(e.target.value)} style={{ width: '100%' }}>
+                                {addresses.map(a => <option key={a.id} value={a.id}>{a.line} — {a.city}</option>)}
+                            </select>
+                        )}
+                    </div>
+                )}
+                
+                <div style={{ marginTop: 8 }}>
+                    {addresses.length > 0 && (
+                        <label style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                            <input type="radio" checked={!useExisting} onChange={() => setUseExisting(false)} style={{ marginRight: 8 }} />
+                            Add new billing address
+                        </label>
+                    )}
+                    {!useExisting && (
+                        <div style={{ display: 'grid', gap: 8 }}>
+                            <input value={newLine} onChange={e => setNewLine(e.target.value)} placeholder="Address line" />
+                            <input value={newCity} onChange={e => setNewCity(e.target.value)} placeholder="City" />
+                            <input value={newZip} onChange={e => setNewZip(e.target.value)} placeholder="ZIP" />
+                        </div>
+                    )}
+                </div>
+                
                 {error && <div style={{ color: 'red' }}>{error}</div>}
-                <div className="row"><button onClick={submit} disabled={addresses.length === 0}>Add card</button></div>
-                {addresses.length === 0 && <div className="muted">Add an address before adding a card</div>}
+                <div className="row"><button onClick={submit}>Add card</button></div>
             </div>
         </div>
     )
@@ -73,12 +127,12 @@ export default function ProfilePage() {
 
             <div className="card">
                 <h3>Payment Cards</h3>
-                <CardForm addresses={user.addresses} onSave={(c) => addCard(c)} />
+                <CardForm addresses={user.addresses} onSave={(c) => addCard(c)} onAddAddress={(a) => addAddress(a)} />
                 <div style={{ marginTop: 12 }}>
                     {(!user.cards || user.cards.length === 0) && <div className="muted">No cards saved</div>}
                     {(user.cards || []).map(c => (
                         <div key={c.id} className="row" style={{ justifyContent: 'space-between', padding: '6px 0' }}>
-                            <div>**** {c.number.slice(-4)} — {c.name} <div className="muted">Billing: {(user.addresses.find(a => a.id === c.billingAddressId)?.line) || 'deleted address'}</div></div>
+                            <div>**** {c.number.slice(-4)} — {c.name} <div className="muted">Billing: {user.addresses.find(a => a.id === c.billingAddressId)?.line || 'deleted address'}</div></div>
                             <div>
                                 <button onClick={() => { const res = updateCard(c.id, {}); if (res && res.error) alert(res.error); }}>Edit</button>
                                 <button onClick={() => deleteCard(c.id)} style={{ background: '#b91c1c', marginLeft: 8 }}>Delete</button>
