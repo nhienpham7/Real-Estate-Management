@@ -54,8 +54,9 @@ export default function ContactPage() {
                 </h1>
 
                 <p style={{ fontSize: "18px", lineHeight: "1.7", marginTop: "18px", color: "#222", maxWidth: "520px" }}>
-                    Let people know what to reach out about and what to expect after contacting you.
-                    Don’t forget to choose a storage option for submissions
+                    We'd love to hear from you! Whether you have questions about our properties, need assistance with your account, 
+                    or just want to say hello, our team is here to help. 
+                    Fill out the form below or reach us through the provided contact details.
                 </p>
 
                 <p style={{ marginTop: "24px", marginBottom: "48px", fontSize: "16px", color: "#222" }}>

@@ -1,28 +1,31 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import express from "express";
+import cors from "cors";
+import pool from "./db.js";
 
-const authRoutes = require('./routes/auth');
-const propertyRoutes = require('./routes/properties');
-const userRoutes = require('./routes/users');
+import usersRoutes from "./routes/users.js";
+import agentsRoutes from "./routes/agents.js";
+import rentersRoutes from "./routes/renters.js";
+import addressesRoutes from "./routes/addresses.js";
+import propertiesRoutes from "./routes/properties.js";
+import bookingsRoutes from "./routes/bookings.js";
+import creditCardsRoutes from "./routes/creditcards.js";
+import lookRoutes from "./routes/look.js";
 
 const app = express();
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/properties', propertyRoutes);
-app.use('/api/users', userRoutes);
+// Register Routes
+app.use("/users", usersRoutes);
+app.use("/agents", agentsRoutes);
+app.use("/renters", rentersRoutes);
+app.use("/addresses", addressesRoutes);
+app.use("/properties", propertiesRoutes);
+app.use("/bookings", bookingsRoutes);
+app.use("/creditcards", creditCardsRoutes);
+app.use("/look", lookRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
-});
+app.get("/", (req, res) => res.send("Backend is running"));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
